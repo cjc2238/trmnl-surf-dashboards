@@ -1,0 +1,80 @@
+{
+  "IDX_0": {
+    "current": {
+      "time": "2026-10-15T07:30",
+      "wave_height": 3.6,
+      "wave_period": 7.9,
+      "wave_direction": 110,
+      "swell_wave_height": 3.0,
+      "swell_wave_period": 9.4,
+      "swell_wave_direction": 112,
+      "wind_wave_height": 1.2,
+      "wind_wave_period": 4.1,
+      "sea_surface_temperature": 17.6
+    },
+    "daily": {
+      "time": [
+        "2026-10-15",
+        "2026-10-16",
+        "2026-10-17",
+        "2026-10-18"
+      ],
+      "wave_height_max": [
+        3.9,
+        4.6,
+        2.8,
+        1.5
+      ],
+      "swell_wave_period_max": [
+        9.6,
+        11.2,
+        8.0,
+        6.1
+      ],
+      "wave_direction_dominant": [
+        108,
+        95,
+        130,
+        170
+      ]
+    }
+  },
+  "IDX_1": {
+    "current": {
+      "time": "2026-10-15T07:30",
+      "temperature_2m": 56.3,
+      "wind_speed_10m": 9.8,
+      "wind_direction_10m": 290,
+      "wind_gusts_10m": 17.4
+    }
+  },
+  "IDX_2": {
+    "predictions": [
+      {
+        "t": "2026-10-15 05:12",
+        "v": "0.21",
+        "type": "L"
+      },
+      {
+        "t": "2026-10-15 11:30",
+        "v": "4.62",
+        "type": "H"
+      },
+      {
+        "t": "2026-10-15 17:40",
+        "v": "0.35",
+        "type": "L"
+      },
+      {
+        "t": "2026-10-16 00:02",
+        "v": "4.80",
+        "type": "H"
+      },
+      {
+        "t": "2026-10-16 06:15",
+        "v": "0.10",
+        "type": "L"
+      }
+    ]
+  }
+}

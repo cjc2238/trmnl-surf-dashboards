@@ -1,0 +1,25 @@
+{
+  "merge_variables": {
+    "run": "Nightly outlook",
+    "updated": "Mon 10:58 PM",
+    "cat": "NOGO",
+    "why": "3-4 ft at 6s but E wind 15-20 mph is onshore all morning, and a small craft advisory is up.",
+    "conf": "High",
+    "trend": "Building",
+    "window": "",
+    "sunrise": "7:13a",
+    "board": "",
+    "board_why": "",
+    "alt": "",
+    "prog": false,
+    "backup": "",
+    "swell": "3.8 ft 6s E",
+    "wind": "E 15-20 mph, all AM",
+    "tide": "Lo 8:05a · Hi 2:20p",
+    "water": "61°F",
+    "suit": "3/2 full",
+    "hazard": "Small craft advisory until 6 PM",
+    "next": "Thu AM: Mid-length, 6'8 (3 ft at 9s, NW 8 mph)",
+    "spots": []
+  }
+}

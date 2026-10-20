@@ -1,0 +1,16 @@
+# Never commit your webhook URL or real payloads
+.env
+*.local.json
+trmnl.json
+payload.json
+
+# Preview scratch files
+.*.preview.html
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+.DS_Store

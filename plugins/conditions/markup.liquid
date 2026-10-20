@@ -1,0 +1,167 @@
+{% comment %}
+  Surf Conditions — TRMNL private plugin (Polling strategy), Full view, 800x480.
+  Polling URLs (see polling-urls.txt), in this order:
+    IDX_0 = Open-Meteo Marine   (waves, swell, water temp, 3-day outlook)
+    IDX_1 = Open-Meteo Forecast (wind, air temp)
+    IDX_2 = NOAA CO-OPS tides   (high/low predictions; US stations only)
+
+  ---- CONFIGURE ME ----
+  spot_name:    shown in the title bar.
+  offshore_deg: compass direction the OFFSHORE wind blows FROM at your beach
+                (beach facing east -> offshore is from the west, ~270).
+{% endcomment %}
+{% assign spot_name = "My Break" %}
+{% assign offshore_deg = 270 %}
+
+{% assign m = IDX_0 %}
+{% assign w = IDX_1 %}
+{% assign t = IDX_2 %}
+{% assign dirs = "N,NNE,NE,ENE,E,ESE,SE,SSE,S,SSW,SW,WSW,W,WNW,NW,NNW" | split: "," %}
+
+{%- comment -%} ---------- Waves ---------- {%- endcomment -%}
+{% assign wave_ft  = m.current.wave_height | default: 0 %}
+{% assign wave_s   = m.current.wave_period | default: 0 %}
+{% assign swell_ft = m.current.swell_wave_height | default: 0 %}
+{% assign swell_s  = m.current.swell_wave_period | default: 0 %}
+{% assign swell_deg = m.current.swell_wave_direction | default: 0 %}
+{% assign ww_ft    = m.current.wind_wave_height | default: 0 %}
+{% assign ww_s     = m.current.wind_wave_period | default: 0 %}
+{% assign sst_c    = m.current.sea_surface_temperature | default: 0 %}
+{% assign sst_f    = sst_c | times: 1.8 | plus: 32 | round %}
+
+{% assign si = swell_deg | plus: 11.25 | divided_by: 22.5 | floor | modulo: 16 %}
+{% assign swell_dir = dirs[si] %}
+
+{%- comment -%} Rough breaking-surf estimate: longer period = bigger faces {%- endcomment -%}
+{% if swell_s >= 10 %}{% assign lo_f = 0.9 %}{% assign hi_f = 1.3 %}
+{% elsif swell_s >= 7 %}{% assign lo_f = 0.7 %}{% assign hi_f = 1.0 %}
+{% else %}{% assign lo_f = 0.5 %}{% assign hi_f = 0.8 %}{% endif %}
+{% assign surf_lo = wave_ft | times: lo_f | round %}
+{% assign surf_hi = wave_ft | times: hi_f | round %}
+{% if surf_hi <= surf_lo %}{% assign surf_hi = surf_lo | plus: 1 %}{% endif %}
+
+{%- comment -%} ---------- Wind ---------- {%- endcomment -%}
+{% assign wind_mph  = w.current.wind_speed_10m | default: 0 | round %}
+{% assign gust_mph  = w.current.wind_gusts_10m | default: 0 | round %}
+{% assign wind_deg  = w.current.wind_direction_10m | default: 0 %}
+{% assign air_f     = w.current.temperature_2m | default: 0 | round %}
+{% assign wi = wind_deg | plus: 11.25 | divided_by: 22.5 | floor | modulo: 16 %}
+{% assign wind_dir = dirs[wi] %}
+
+{% assign d = wind_deg | minus: offshore_deg %}
+{% if d < 0 %}{% assign d = d | plus: 360 %}{% endif %}
+{% if d > 180 %}{% assign d = 360 | minus: d %}{% endif %}
+{% if wind_mph < 5 %}{% assign wind_rel = "Light / glassy" %}
+{% elsif d <= 45 %}{% assign wind_rel = "Offshore" %}
+{% elsif d <= 80 %}{% assign wind_rel = "Cross-offshore" %}
+{% elsif d < 100 %}{% assign wind_rel = "Cross-shore" %}
+{% elsif d < 135 %}{% assign wind_rel = "Cross-onshore" %}
+{% else %}{% assign wind_rel = "Onshore" %}{% endif %}
+
+{%- comment -%} ---------- Simple rating (my heuristic, not Surfline's) ---------- {%- endcomment -%}
+{% assign score = 0 %}
+{% if surf_hi >= 2 %}{% assign score = score | plus: 1 %}{% endif %}
+{% if surf_hi >= 4 %}{% assign score = score | plus: 1 %}{% endif %}
+{% if swell_s >= 8 %}{% assign score = score | plus: 1 %}{% endif %}
+{% if wind_rel == "Offshore" or wind_rel == "Cross-offshore" or wind_rel == "Light / glassy" %}{% assign score = score | plus: 1 %}{% endif %}
+{% if wind_rel == "Onshore" and wind_mph > 12 %}{% assign score = score | minus: 1 %}{% endif %}
+{% if surf_hi <= 1 %}{% assign rating = "FLAT" %}
+{% elsif score <= 1 %}{% assign rating = "POOR" %}
+{% elsif score == 2 %}{% assign rating = "POOR-FAIR" %}
+{% elsif score == 3 %}{% assign rating = "FAIR" %}
+{% else %}{% assign rating = "GOOD" %}{% endif %}
+
+{%- comment -%} ---------- Tides: next 4 after "now" ---------- {%- endcomment -%}
+{% assign now_local = m.current.time | replace: "T", " " %}
+
+{%- comment -%}
+  Layout uses only inline styles on plain divs (no custom class names),
+  so nothing can collide with TRMNL's framework CSS. Text uses TRMNL's own
+  label / value classes so it keeps the device font.
+{%- endcomment -%}
+{% if surf_hi >= 10 %}{% assign big = 64 %}{% else %}{% assign big = 88 %}{% endif %}
+
+<div class="layout" style="display:block; padding:0;">
+<div style="display:flex; flex-direction:column; width:100%; gap:8px;">
+
+  <!-- ===== Top band ===== -->
+  <div style="display:flex; flex-direction:row; width:100%; height:270px; gap:16px;">
+
+    <!-- Surf height + rating -->
+    <div style="display:flex; flex-direction:column; justify-content:space-between; width:210px; flex:none; border:2px solid black; border-radius:10px; padding:10px 14px;">
+      <div><span class="label">SURF (est.)</span></div>
+      <div style="white-space:nowrap;">
+        <span class="value" style="font-size:{{ big }}px; line-height:1;">{{ surf_lo }}–{{ surf_hi }}</span><span class="value value--xsmall"> ft</span>
+      </div>
+      <div>
+        <span class="value value--xsmall" style="display:inline-block; background:black; color:white; padding:2px 10px; border-radius:6px; font-weight:700;">{{ rating }}</span>
+      </div>
+    </div>
+
+    <!-- Swell + wind -->
+    <div style="display:flex; flex-direction:column; justify-content:space-between; flex:1; min-width:0;">
+      <div>
+        <div><span class="label">Primary swell</span></div>
+        <div style="white-space:nowrap;"><span class="value value--small">{{ swell_ft | round: 1 }} ft @ {{ swell_s | round }}s {{ swell_dir }} {{ swell_deg | round }}°</span></div>
+      </div>
+      <div>
+        <div><span class="label">Wind swell</span></div>
+        <div style="white-space:nowrap;"><span class="value value--small">{{ ww_ft | round: 1 }} ft @ {{ ww_s | round }}s</span></div>
+      </div>
+      <div>
+        <div><span class="label">Wind · {{ wind_rel }}</span></div>
+        <div style="white-space:nowrap;"><span class="value value--small">{{ wind_mph }} mph {{ wind_dir }} (gust {{ gust_mph }})</span></div>
+      </div>
+      <div>
+        <div><span class="label">Water / Air</span></div>
+        <div style="white-space:nowrap;"><span class="value value--small">{{ sst_f }}°F / {{ air_f }}°F</span></div>
+      </div>
+    </div>
+
+    <!-- Tides -->
+    <div style="display:flex; flex-direction:column; justify-content:space-between; width:190px; flex:none; border-left:2px solid black; padding-left:12px;">
+      <div><span class="label">TIDES</span></div>
+      {% assign shown = 0 %}
+      {% for p in t.predictions %}
+        {% if p.t > now_local and shown < 4 %}
+          {% assign hhmm = p.t | split: " " | last %}
+          {% assign hh = hhmm | split: ":" | first | plus: 0 %}
+          {% assign mm = hhmm | split: ":" | last %}
+          {% if hh == 0 %}{% assign h12 = 12 %}{% elsif hh > 12 %}{% assign h12 = hh | minus: 12 %}{% else %}{% assign h12 = hh %}{% endif %}
+          {% if hh >= 12 %}{% assign ap = "p" %}{% else %}{% assign ap = "a" %}{% endif %}
+          <div>
+            <div><span class="label">{% if p.type == "H" %}▲ High{% else %}▼ Low{% endif %}</span></div>
+            <div style="white-space:nowrap;"><span class="value value--xsmall">{{ h12 }}:{{ mm }}{{ ap }} · {{ p.v | plus: 0 | round: 1 }} ft</span></div>
+          </div>
+          {% assign shown = shown | plus: 1 %}
+        {% endif %}
+      {% endfor %}
+      {% if shown == 0 %}<div><span class="label">No tide data</span></div>{% endif %}
+    </div>
+  </div>
+
+  <!-- ===== 3-day outlook ===== -->
+  <div style="display:flex; flex-direction:row; width:100%; border-top:2px solid black; padding-top:8px; gap:16px;">
+    {% for day in m.daily.time offset:1 limit:3 %}
+      {% assign i = forloop.index %}
+      {% assign dmax = m.daily.wave_height_max[i] | default: 0 %}
+      {% assign dper = m.daily.swell_wave_period_max[i] | default: 0 %}
+      {% assign ddeg = m.daily.wave_direction_dominant[i] | default: 0 %}
+      {% assign di = ddeg | plus: 11.25 | divided_by: 22.5 | floor | modulo: 16 %}
+      {% assign dlo = dmax | times: 0.6 | round %}
+      {% assign dhi = dmax | times: 0.9 | round %}
+      {% if dhi <= dlo %}{% assign dhi = dlo | plus: 1 %}{% endif %}
+      <div style="flex:1; min-width:0;">
+        <div style="white-space:nowrap;"><span class="label">{{ day | date: "%a %b %-d" }}</span></div>
+        <div style="white-space:nowrap;"><span class="value value--small">{{ dlo }}–{{ dhi }} ft</span> <span class="label">{{ dper | round }}s {{ dirs[di] }}</span></div>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+</div>
+
+<div class="title_bar">
+  <span class="title">{{ spot_name }} Surf</span>
+  <span class="instance">Updated {{ m.current.time | date: "%-I:%M %p" }} · Open-Meteo / NOAA</span>
+</div>

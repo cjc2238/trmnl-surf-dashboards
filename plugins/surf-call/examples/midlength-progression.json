@@ -1,0 +1,47 @@
+{
+  "merge_variables": {
+    "run": "Morning check",
+    "updated": "Tue 5:31 AM",
+    "cat": "MIDLENGTH",
+    "why": "Clean 2.5-3 ft at 9s ESE with W wind 4-7 mph until ~10a; punchy on the dropping tide.",
+    "conf": "High",
+    "trend": "Holding",
+    "window": "6:50-10:00 AM",
+    "sunrise": "7:13a",
+    "board": "68",
+    "board_why": "Clean, soft-ish 2.5-3 ft",
+    "alt": "",
+    "prog": true,
+    "backup": "68",
+    "swell": "2.6 ft 9s ESE",
+    "wind": "W 4-7 → SE 11 by 11a",
+    "tide": "Lo 8:05a · Hi 2:20p",
+    "water": "61°F",
+    "suit": "3/2 full",
+    "hazard": "Moderate rip current risk",
+    "next": "",
+    "spots": [
+      {
+        "name": "Main St Beach",
+        "board": "68",
+        "surf": "2-2.5",
+        "wind": "W 5",
+        "drive": "2 min"
+      },
+      {
+        "name": "North Jetty",
+        "board": "64",
+        "surf": "2.5-3",
+        "wind": "W 5",
+        "drive": "4 min"
+      },
+      {
+        "name": "The Point",
+        "board": "72",
+        "surf": "3-3.5",
+        "wind": "WSW 6",
+        "drive": "9 min"
+      }
+    ]
+  }
+}

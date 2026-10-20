@@ -1,0 +1,40 @@
+{
+  "merge_variables": {
+    "run": "Midday check",
+    "updated": "Tue 5:31 AM",
+    "cat": "LONGBOARD",
+    "why": "1-1.5 ft at 7s, soft and fat on the high tide; light SE 4-6 mph. Cold-water rule: max volume.",
+    "conf": "Medium",
+    "trend": "Dropping",
+    "window": "1:30-4:30 PM",
+    "sunrise": "7:13a",
+    "board": "96",
+    "board_why": "Weak, mushy 1-1.5 ft on high tide",
+    "alt": "80",
+    "prog": false,
+    "backup": "",
+    "swell": "1.4 ft 7s E",
+    "wind": "SE 4-6 mph, steady",
+    "tide": "Lo 8:05a · Hi 2:20p",
+    "water": "48°F",
+    "suit": "5/4 hood + boots",
+    "hazard": "",
+    "next": "",
+    "spots": [
+      {
+        "name": "Main St Beach",
+        "board": "96",
+        "surf": "1-1.5",
+        "wind": "SE 5",
+        "drive": "2 min"
+      },
+      {
+        "name": "Boardwalk 4th Ave",
+        "board": "80",
+        "surf": "1.5-2",
+        "wind": "SE 5",
+        "drive": "5 min"
+      }
+    ]
+  }
+}

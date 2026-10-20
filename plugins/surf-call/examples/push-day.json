@@ -1,0 +1,47 @@
+{
+  "merge_variables": {
+    "run": "Morning check",
+    "updated": "Tue 5:31 AM",
+    "cat": "PUSH",
+    "why": "4-5 ft at 11s ESE, NW 6-9 mph, no SCA, peeling lefts south of the jetty. Meets every can't-miss box.",
+    "conf": "High",
+    "trend": "Holding",
+    "window": "6:50-10:00 AM",
+    "sunrise": "7:13a",
+    "board": "72",
+    "board_why": "Push day: 7'2 only",
+    "alt": "",
+    "prog": false,
+    "backup": "",
+    "swell": "4.4 ft 11s ESE",
+    "wind": "NW 6-9 → S 10 by 1p",
+    "tide": "Lo 8:05a · Hi 2:20p",
+    "water": "61°F",
+    "suit": "3/2 full",
+    "hazard": "High rip risk; paddle out the jetty channel, sets every ~10 min",
+    "next": "",
+    "spots": [
+      {
+        "name": "South Jetty",
+        "board": "72",
+        "surf": "4-5",
+        "wind": "NW 7",
+        "drive": "9 min"
+      },
+      {
+        "name": "The Point",
+        "board": "72",
+        "surf": "4-5",
+        "wind": "NW 8",
+        "drive": "12 min"
+      },
+      {
+        "name": "Inlet North Side",
+        "board": "72",
+        "surf": "4-5+",
+        "wind": "NW 9",
+        "drive": "18 min"
+      }
+    ]
+  }
+}

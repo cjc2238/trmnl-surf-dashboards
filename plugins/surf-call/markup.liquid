@@ -1,0 +1,142 @@
+{%- comment -%}
+  Surf Call — TRMNL private plugin (Webhook strategy), Full view, 800x480 (TRMNL OG).
+  Shows a "go / no go + which board" call pushed to the plugin's webhook as
+  merge_variables. Anything can push it: a scheduled AI agent, a script, Home Assistant.
+  Field reference: plugins/surf-call/PAYLOAD.md
+
+  ---- CONFIGURE ME ----
+  spot_name: shown in the title bar.
+  Quiver: up to 5 boards, highest volume first. Each list is "|"-separated and
+  must have the same number of entries. q_ids are the short IDs your payload
+  uses in board / alt / backup / spots[].board. The board with ID "64" (or
+  whatever you put in prog_id) is the "progression" board tagged TRY.
+
+  Layout uses inline styles on plain divs (no custom class names) so nothing
+  collides with TRMNL's framework CSS; text uses TRMNL's label/value classes.
+{%- endcomment -%}
+
+{%- comment -%} ---- Title shown in the title bar. ---- {%- endcomment -%}
+{% assign spot_name = "My Break" %}
+
+{%- comment -%} ---- Quiver, highest volume first. Edit here if the quiver changes. ---- {%- endcomment -%}
+{% assign q_ids   = "96|80|68|72|64" | split: "|" %}
+{% assign q_size  = "9'6|8'0|6'8|7'2|6'4" | split: "|" %}
+{% assign q_name  = "Walden|Walden|Cream|NSP|Prog." | split: "|" %}
+{% assign q_vol   = "86|61.7|54.6|51.3|48" | split: "|" %}
+{% assign q_full  = "Walden Magic|Walden Magic|Cream fish|NSP fish|progression" | split: "|" %}
+{% assign prog_id = "64" %}
+
+{% assign board_s = board | append: "" %}
+{% assign alt_s = alt | append: "" %}
+{% assign backup_s = backup | append: "" %}
+{% assign main_label = "" %}
+{% for id in q_ids %}
+  {% if id == board_s %}{% assign main_label = q_size[forloop.index0] | append: " " | append: q_full[forloop.index0] %}{% assign main_vol = q_vol[forloop.index0] %}{% endif %}
+{% endfor %}
+
+{% case cat %}
+  {% when "LONGBOARD" %}{% assign big = "LONGBOARD" %}{% assign big_px = 40 %}
+  {% when "MIDLENGTH" %}{% assign big = "MID-LENGTH" %}{% assign big_px = 38 %}
+  {% when "PUSH" %}{% assign big = "PUSH DAY" %}{% assign big_px = 46 %}
+  {% when "NOGO" %}{% assign big = "NO GO" %}{% assign big_px = 60 %}
+  {% else %}{% assign big = "WAITING" %}{% assign big_px = 48 %}
+{% endcase %}
+{% if cat == "NOGO" or cat == blank %}{% assign go = false %}{% else %}{% assign go = true %}{% endif %}
+
+<div class="layout" style="display:block; padding:0;">
+<div style="display:flex; flex-direction:column; width:100%; gap:8px;">
+
+  <!-- ===== Top band: the call + conditions ===== -->
+  <div style="display:flex; flex-direction:row; width:100%; height:190px; gap:16px;">
+
+    <div style="display:flex; flex-direction:column; justify-content:space-between; width:300px; flex:none; padding:10px 14px; border-radius:10px; {% if go %}background:black; color:white;{% else %}border:2px solid black;{% endif %}">
+      <div style="white-space:nowrap; overflow:hidden;"><span class="label" style="color:inherit;">{{ run | default: "Surf call" | upcase }}</span></div>
+      <div style="white-space:nowrap;"><span class="value" style="font-size:{{ big_px }}px; line-height:1; font-weight:700; color:inherit;">{{ big }}</span></div>
+      {% if go %}
+        <div>
+          <div style="white-space:nowrap; overflow:hidden;"><span class="value value--xsmall" style="color:inherit;">Load: {{ main_label | default: board }}</span></div>
+          {% if board_why != blank %}<div style="white-space:nowrap; overflow:hidden;"><span class="label" style="color:inherit;">{{ board_why }}</span></div>{% endif %}
+          <div style="white-space:nowrap; overflow:hidden;"><span class="label" style="color:inherit;">In the water {{ window }}</span></div>
+        </div>
+      {% else %}
+        <div style="overflow:hidden; max-height:62px;"><span class="label" style="color:inherit;">{{ next | default: "No qualifying window in the forecast." }}</span></div>
+      {% endif %}
+    </div>
+
+    <div style="display:flex; flex-direction:column; justify-content:space-between; flex:1; min-width:0;">
+      <div style="max-height:66px; overflow:hidden;">
+        <span class="label">Why{% if conf != blank %} · {{ conf }} conf.{% endif %}{% if trend != blank %} · buoys {{ trend | downcase }}{% endif %}:</span>
+        <span class="label">{{ why }}</span>
+      </div>
+      <div style="display:flex; flex-direction:row; flex-wrap:wrap; row-gap:4px; column-gap:12px;">
+        <div style="width:44%; min-width:0;">
+          <div><span class="label">Swell</span></div>
+          <div style="white-space:nowrap; overflow:hidden;"><span class="value value--xsmall">{{ swell | default: "—" }}</span></div>
+        </div>
+        <div style="width:52%; min-width:0;">
+          <div><span class="label">Wind</span></div>
+          <div style="white-space:nowrap; overflow:hidden;"><span class="value value--xsmall">{{ wind | default: "—" }}</span></div>
+        </div>
+        <div style="width:44%; min-width:0;">
+          <div><span class="label">Tide · Sunrise {{ sunrise }}</span></div>
+          <div style="white-space:nowrap; overflow:hidden;"><span class="value value--xsmall">{{ tide | default: "—" }}</span></div>
+        </div>
+        <div style="width:52%; min-width:0;">
+          <div><span class="label">Water · Wetsuit</span></div>
+          <div style="white-space:nowrap; overflow:hidden;"><span class="value value--xsmall">{{ water | default: "—" }}{% if suit != blank %} · {{ suit }}{% endif %}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Quiver rack ===== -->
+  <div style="display:flex; flex-direction:row; width:100%; gap:8px;">
+    {% for id in q_ids %}
+      {% assign i = forloop.index0 %}
+      {% assign tag = "" %}{% assign style = "border:1px solid black;" %}{% assign ink = "" %}
+      {% if go %}
+        {% if prog == true and id == prog_id %}{% assign tag = "TRY" %}{% assign style = "border:2px dashed black;" %}{% endif %}
+        {% if id == backup_s and prog == true and id != board_s %}{% assign tag = "BACKUP" %}{% assign style = "border:2px solid black;" %}{% endif %}
+        {% if id == alt_s %}{% assign tag = "OR" %}{% assign style = "border:2px solid black;" %}{% endif %}
+        {% if id == board_s %}{% assign tag = "LOAD" %}{% assign style = "background:black; border:2px solid black;" %}{% assign ink = "color:white;" %}{% endif %}
+      {% endif %}
+      <div style="flex:1; min-width:0; border-radius:8px; padding:4px 8px; {{ style }} {{ ink }}">
+        <div style="display:flex; flex-direction:row; justify-content:space-between; white-space:nowrap;">
+          <span class="value value--xsmall" style="{{ ink }}">{{ q_size[i] }}</span>
+          <span class="label" style="font-weight:700; {{ ink }}">{{ tag }}</span>
+        </div>
+        <div style="white-space:nowrap; overflow:hidden;"><span class="label" style="{{ ink }}">{{ q_vol[i] }} L · {{ q_name[i] }}</span></div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- ===== Spots ===== -->
+  <div style="border-top:2px solid black; padding-top:4px;">
+    {% if spots.size > 0 %}
+      {% for s in spots limit:3 %}
+        {% assign sb = s.board | append: "" %}
+        {% assign sb_label = sb %}
+        {% for id in q_ids %}{% if id == sb %}{% assign sb_label = q_size[forloop.index0] %}{% endif %}{% endfor %}
+        <div style="display:flex; flex-direction:row; width:100%; gap:10px; white-space:nowrap; align-items:baseline;">
+          <div style="flex:2.4; min-width:0; overflow:hidden;"><span class="value value--xsmall">{{ s.name }}</span></div>
+          <div style="flex:0.8; overflow:hidden;"><span class="value value--xsmall">{{ sb_label }}</span></div>
+          <div style="flex:1.1; overflow:hidden;"><span class="value value--xsmall">{{ s.surf }} ft</span></div>
+          <div style="flex:1.2; overflow:hidden;"><span class="value value--xsmall">{{ s.wind }}</span></div>
+          <div style="flex:1; text-align:right;"><span class="value value--xsmall">{{ s.drive }}</span></div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div><span class="label">No spots qualify in this window.</span></div>
+    {% endif %}
+    {% if hazard != blank %}
+      <div style="margin-top:2px; white-space:nowrap; overflow:hidden;"><span class="label">⚠ {{ hazard }}</span></div>
+    {% endif %}
+  </div>
+
+</div>
+</div>
+
+<div class="title_bar">
+  <span class="title">Surf Call · {{ spot_name }}</span>
+  <span class="instance">Updated {{ updated | default: "—" }}</span>
+</div>
